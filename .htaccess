@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Clean URLs
+RewriteRule ^products/?$ products.html [L]
+RewriteRule ^$ index.html [L]
+
+# Redirect old .html URLs to clean URLs
+RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+RewriteRule ^index\.html$ / [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+products\.html[\s?] [NC]
+RewriteRule ^products\.html$ /products [R=301,L]

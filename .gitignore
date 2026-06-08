@@ -1,0 +1,12 @@
+# Ignore local Firebase credentials
+firebase-config.js
+
+# Node modules (if ever using node tooling)
+node_modules/
+
+# Build outputs
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db

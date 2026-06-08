@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Shree Ganapati Jewellers</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body class="dashboard-page" data-page="dashboard">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <img src="../img/logo.webp" alt="Shree Ganapati Jewellers">
+                <span data-i18n="dashboardBrand">Admin Dashboard</span>
+            </div>
+            <div class="topbar-actions">
+                <button type="button" id="langToggle" class="lang-switch" aria-label="Switch language">ने</button>
+                <button class="logout" id="logoutButton" type="button" data-i18n="logout">Log out</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-shell">
+        <aside class="sidebar panel">
+            <div>
+                <p class="sidebar-kicker" data-i18n="dashboardBrand">Admin Dashboard</p>
+                <h1 data-i18n="dashboardTitle">Welcome, admin.</h1>
+                <p class="sidebar-copy" data-i18n="dashboardIntro">This is the secure dashboard for managing your jewellery website content.</p>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Admin sections">
+                <a href="#rates" class="sidebar-link active" data-i18n="navRates">Rates</a>
+                <a href="#products" class="sidebar-link" data-i18n="navProducts">Products</a>
+                <a href="#gallery-control" class="sidebar-link" data-i18n="navGallery">Gallery</a>
+                <a href="#inventory" class="sidebar-link" data-i18n="navInventory">Inventory</a>
+                <a href="#orders" class="sidebar-link" data-i18n="navOrders">Orders</a>
+            </nav>
+
+            <div class="sidebar-meta">
+                <div>
+                    <span class="label" data-i18n="statusLabel">Status</span>
+                    <strong id="authStatus">Checking...</strong>
+                </div>
+                <div>
+                    <span class="label" data-i18n="signedInLabel">Signed in as</span>
+                    <strong id="userEmail">Loading...</strong>
+                </div>
+                <div>
+                    <span class="label" data-i18n="themeLabel">Theme</span>
+                    <strong data-i18n="themeValue">Gold / Cream</strong>
+                </div>
+            </div>
+        </aside>
+
+        <section class="dashboard-main">
+            <section class="panel rate-panel" id="rates">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker" data-i18n="ratesKicker">Market control</p>
+                        <h2 data-i18n="ratesTitle">Update gold / silver rates</h2>
+                    </div>
+                </div>
+
+                <div class="rate-grid">
+                    <label class="field compact">
+                        <span data-i18n="goldLabel">Gold rate</span>
+                        <input type="text" placeholder="NPR 000,000" data-i18n-placeholder="ratePlaceholder" data-rate-input="gold">
+                    </label>
+                    <label class="field compact">
+                        <span data-i18n="silverLabel">Silver</span>
+                        <input type="text" placeholder="NPR 000,000" data-i18n-placeholder="ratePlaceholder" data-rate-input="silver">
+                    </label>
+                    <label class="field compact">
+                        <span data-i18n="rateDateLabel">Day / Date</span>
+                        <input type="text" placeholder="Eg: Sunday, 2083 Jeth 30" data-i18n-placeholder="rateDatePlaceholder" data-rate-input="rateDate">
+                    </label>
+                </div>
+
+                <div class="rate-actions">
+                    <button type="button" class="ghost-button rate-button" data-i18n="saveRates">Save rates</button>
+                </div>
+            </section>
+
+            <section class="panel form-panel-card" id="products">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker" data-i18n="productsKicker">Catalog control</p>
+                        <h2 data-i18n="addProductTitle">Add product</h2>
+                    </div>
+                    <button type="button" class="ghost-button" data-i18n="clearForm">Clear form</button>
+                </div>
+
+                <form class="product-form" id="productForm">
+                    <label class="field">
+                        <span data-i18n="titleLabel">Title (EN)</span>
+                        <input type="text" id="productTitle" data-i18n-placeholder="titlePlaceholder" placeholder="Product title" required>
+                    </label>
+                    <label class="field">
+                        <span data-i18n="titleLabelNe">Title (NE)</span>
+                        <input type="text" id="productTitleNe" placeholder="उत्पादन शीर्षक (optional)">
+                    </label>
+                    <label class="field">
+                        <span data-i18n="weightLabel">Weight</span>
+                        <input type="text" id="productWeight" data-i18n-placeholder="weightPlaceholder" placeholder="2 तोला" required>
+                    </label>
+                    <label class="field">
+                        <span data-i18n="typeLabel">Type</span>
+                        <select id="productType" required>
+                            <option value="" data-i18n="chooseType">Choose type</option>
+                            <option value="Gold" data-i18n="typeGold">Gold</option>
+                            <option value="Silver" data-i18n="typeSilver">Silver</option>
+                            <option value="Diamond" data-i18n="typeDiamond">Diamond</option>
+                            <option value="Gold / Silver" data-i18n="typeGoldSilver">Gold / Silver</option>
+                            <option value="Gold / Diamond" data-i18n="typeGoldDiamond">Gold / Diamond</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span data-i18n="categoryLabel">Category</span>
+                        <select id="productCategory" required>
+                            <option value="" data-i18n="chooseCategory">Choose category</option>
+                            <option value="rings" data-i18n="categoryRings">Rings</option>
+                            <option value="necklaces" data-i18n="categoryNecklaces">Necklaces</option>
+                            <option value="bracelets" data-i18n="categoryBracelets">Bracelets</option>
+                            <option value="earrings" data-i18n="categoryEarrings">Earrings</option>
+                            <option value="others" data-i18n="categoryOthers">Others</option>
+                        </select>
+                    </label>
+                    <label class="field field-full">
+                        <span data-i18n="descriptionLabel">Description (EN)</span>
+                        <textarea id="productDescription" rows="4" data-i18n-placeholder="descriptionPlaceholder" placeholder="Product description" required></textarea>
+                    </label>
+                    <label class="field field-full">
+                        <span data-i18n="descriptionLabelNe">Description (NE)</span>
+                        <textarea id="productDescriptionNe" rows="4" placeholder="उत्पादन विवरण (optional)"></textarea>
+                    </label>
+                    <label class="field field-full">
+                        <span data-i18n="imageLabel">Image attachment</span>
+                        <input type="file" id="productImageFile" accept="image/png,image/jpeg,image/jpg">
+                        <small class="field-hint" data-i18n="imageHint">Choose a PNG or JPG file from your device.</small>
+                    </label>
+                    <div class="form-actions field-full">
+                        <button type="submit" class="button" data-i18n="addProductButton">Add product</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel gallery-panel" id="gallery-control">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker" data-i18n="galleryKicker">Homepage media</p>
+                        <h2 data-i18n="galleryTitle">Gallery Control</h2>
+                        <p class="sidebar-copy" data-i18n="galleryIntro">Manage 4 images and 4 videos for the homepage gallery layout.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-control-section">
+                    <h3 data-i18n="galleryImagesTitle">Images</h3>
+                    <p class="field-hint" data-i18n="galleryImageHint">Images are compressed automatically. For faster upload, keep files under 10 MB.</p>
+                    <div class="gallery-control-grid">
+                        <article class="gallery-slot-card" data-gallery-slot="img1" data-gallery-type="image">
+                            <div class="gallery-preview" data-gallery-preview="img1">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <img src="" alt="Image 1 preview" data-gallery-preview-img="img1" loading="lazy" decoding="async">
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryImage1">Image 1</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="image/*" data-gallery-input="img1">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="img1" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="img2" data-gallery-type="image">
+                            <div class="gallery-preview" data-gallery-preview="img2">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <img src="" alt="Image 2 preview" data-gallery-preview-img="img2" loading="lazy" decoding="async">
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryImage2">Image 2</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="image/*" data-gallery-input="img2">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="img2" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="img3" data-gallery-type="image">
+                            <div class="gallery-preview" data-gallery-preview="img3">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <img src="" alt="Image 3 preview" data-gallery-preview-img="img3" loading="lazy" decoding="async">
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryImage3">Image 3</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="image/*" data-gallery-input="img3">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="img3" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="img4" data-gallery-type="image">
+                            <div class="gallery-preview" data-gallery-preview="img4">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <img src="" alt="Image 4 preview" data-gallery-preview-img="img4" loading="lazy" decoding="async">
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryImage4">Image 4</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="image/*" data-gallery-input="img4">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="img4" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="gallery-control-section">
+                    <h3 data-i18n="galleryVideosTitle">Videos</h3>
+                    <p class="field-hint" data-i18n="galleryVideoHint">Videos are uploaded as-is. For faster upload, keep files under 10 MB.</p>
+                    <div class="gallery-control-grid">
+                        <article class="gallery-slot-card" data-gallery-slot="vid1" data-gallery-type="video">
+                            <div class="gallery-preview" data-gallery-preview="vid1">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <video data-gallery-preview-video="vid1" muted playsinline loop preload="metadata"></video>
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryVideo1">Video 1</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="video/*" data-gallery-input="vid1">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="vid1" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="vid2" data-gallery-type="video">
+                            <div class="gallery-preview" data-gallery-preview="vid2">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <video data-gallery-preview-video="vid2" muted playsinline loop preload="metadata"></video>
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryVideo2">Video 2</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="video/*" data-gallery-input="vid2">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="vid2" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="vid3" data-gallery-type="video">
+                            <div class="gallery-preview" data-gallery-preview="vid3">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <video data-gallery-preview-video="vid3" muted playsinline loop preload="metadata"></video>
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryVideo3">Video 3</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="video/*" data-gallery-input="vid3">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="vid3" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+
+                        <article class="gallery-slot-card" data-gallery-slot="vid4" data-gallery-type="video">
+                            <div class="gallery-preview" data-gallery-preview="vid4">
+                                <div class="gallery-placeholder" data-i18n="galleryPlaceholder">No asset</div>
+                                <video data-gallery-preview-video="vid4" muted playsinline loop preload="metadata"></video>
+                            </div>
+                            <div class="gallery-slot-label" data-i18n="galleryVideo4">Video 4</div>
+                            <div class="gallery-upload">
+                                <input type="file" accept="video/*" data-gallery-input="vid4">
+                            </div>
+                            <button type="button" class="ghost-button gallery-update-button" data-gallery-update="vid4" data-i18n="galleryUpdateButton">Update</button>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel table-panel" id="inventory">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker" data-i18n="inventoryKicker">Products list</p>
+                        <h2 data-i18n="allProductsTitle">Default products</h2>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="tableImage">Image</th>
+                                <th data-i18n="tableTitle">Title</th>
+                                <th data-i18n="tableWeight">Weight</th>
+                                <th data-i18n="tableType">Type</th>
+                                <th data-i18n="tableCategory">Category</th>
+                                <th data-i18n="tableDescription">Description</th>
+                                <th data-i18n="tableFeature">Feature</th>
+                                <th data-i18n="tableActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="productCardList" class="product-card-list" aria-live="polite"></div>
+            </section>
+
+            <section class="panel card" id="orders">
+                <h2 data-i18n="ordersTitle">Orders</h2>
+                <p data-i18n="ordersText">Use this area later for order review, customer messages, and quick replies.</p>
+            </section>
+        </section>
+    </main>
+
+    <!-- 1. First, load the main Firebase app core library -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+    <!-- 2. Next, load the specific feature libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+
+    <!-- 3. Then load your secret configuration keys -->
+    <script src="../firebase-config.js"></script>
+
+    <!-- 4. Finally, load your actual website application script -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="admin-script.js" defer></script>
+</body>
+</html>

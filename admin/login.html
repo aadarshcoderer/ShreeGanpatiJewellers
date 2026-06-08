@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Shree Ganapati Jewellers</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css">  
+</head>
+<body class="admin-page" data-page="login">
+    <main class="login-shell">
+        <section class="brand-panel" aria-labelledby="adminBrandTitle">
+            <div>
+                <div class="brand-top">
+                    <div class="brand-top-left">
+                        <img src="../img/logo.webp" alt="Shree Ganapati Jewellers" class="brand-logo">
+                        <div>
+                            <p class="brand-name">Shree Ganapati Jewellers</p>
+                            <p class="brand-subtitle" data-i18n="adminAccess">Admin Access</p>
+                        </div>
+                    </div>
+                    <button type="button" id="langToggle" class="lang-switch" aria-label="Switch language">ने</button>
+                </div>
+                <div class="brand-copy">
+                    <h1 id="adminBrandTitle" data-i18n="loginTitle">Secure admin login</h1>
+                    <p data-i18n="loginIntro">Sign in to manage catalogue content, featured items, and updates for the public site.</p>
+                </div>
+            </div>
+            <div class="brand-note" data-i18n="loginNote">
+                Use your admin email and password. After a successful sign in, you will be sent to the dashboard automatically.
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-card">
+                <h2 data-i18n="welcomeBack">Welcome back</h2>
+                <p class="subtext" data-i18n="welcomeText">Enter your admin credentials to continue.</p>
+
+                <form id="loginForm" novalidate>
+                    <div class="field">
+                        <label for="identifier" data-i18n="identifierLabel">Username or email</label>
+                        <input id="identifier" name="identifier" type="text" autocomplete="username" data-i18n-placeholder="identifierPlaceholder" placeholder="admin@domain.com" required>
+                    </div>
+                    <div class="field">
+                        <label for="password" data-i18n="passwordLabel">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" data-i18n-placeholder="passwordPlaceholder" placeholder="Enter password" required>
+                    </div>
+                    <div class="toggle-row">
+                        <label for="showPassword"><input type="checkbox" id="showPassword"><span data-i18n="showPassword">Show password</span></label>
+                        <a href="../index.html" data-i18n="backToSite">Back to site</a>
+                    </div>
+                    <button class="button" id="loginButton" type="submit" data-i18n="loginButton">Log in</button>
+                    <div class="error-message" id="errorMessage" role="alert" aria-live="polite"></div>
+                    <p class="helper-text" data-i18n="helperText">Update the project settings in this file before going live.</p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="admin-script.js" defer></script>
+</body>
+</html>
