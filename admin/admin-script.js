@@ -653,113 +653,65 @@ document.addEventListener('DOMContentLoaded', () => {
 			return firebase.storage();
 		};
 
-		const getImageStoragePath = (productId, fileName) => {
-			const safeName = String(fileName || 'image').replace(/[^a-zA-Z0-9._-]/g, '-');
-			return `products/${productId}/${Date.now()}-${safeName}`;
+		const getStoragePath = (folder, itemId, fileName) => {
+			const safeFolder = String(folder || 'uploads').replace(/[^a-zA-Z0-9/_-]/g, '-');
+			const safeItemId = String(itemId || 'item').replace(/[^a-zA-Z0-9._-]/g, '-');
+			const safeName = String(fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '-');
+			return `${safeFolder}/${safeItemId}/${Date.now()}-${safeName}`;
 		};
 
-		const uploadProductImage = async (file, productId) => {
+		const uploadFileToStorage = (file, path, options = {}) => new Promise((resolve, reject) => {
 			const storage = getStorage();
 			if (!storage || !file) {
-				return '';
+				reject(new Error('Firebase Storage is unavailable'));
+				return;
 			}
 
-			const ref = storage.ref().child(getImageStoragePath(productId, file.name));
-			await ref.put(file, {
+			const ref = storage.ref().child(path);
+			const uploadTask = ref.put(file, {
 				contentType: file.type || 'application/octet-stream'
 			});
-			return ref.getDownloadURL();
-		};
 
-		const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(String(reader.result || ''));
-			reader.onerror = () => reject(reader.error || new Error('File read failed'));
-			reader.readAsDataURL(file);
-		});
-
-		const readFileAsDataUrlWithAbort = (file, signal, onProgress) => new Promise((resolve, reject) => {
-			const reader = new FileReader();
 			const abortHandler = () => {
-				try {
-					reader.abort();
-				} catch (error) {
-					// Ignore abort errors
-				}
-				reject(new Error('Upload cancelled'));
-			};
-			reader.onprogress = (event) => {
-				if (typeof onProgress !== 'function') return;
-				if (event.lengthComputable && event.total > 0) {
-					const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
-					onProgress(percent);
+				if (uploadTask && typeof uploadTask.cancel === 'function') {
+					uploadTask.cancel();
 				}
 			};
-			if (signal) {
-				signal.addEventListener('abort', abortHandler, { once: true });
-			}
-			reader.onload = () => {
-				if (signal) {
-					signal.removeEventListener('abort', abortHandler);
-				}
-				resolve(String(reader.result || ''));
-			};
-			reader.onerror = () => {
-				if (signal) {
-					signal.removeEventListener('abort', abortHandler);
-				}
-				reject(reader.error || new Error('File read failed'));
-			};
-			reader.readAsDataURL(file);
-		});
 
-		const readImageAsCompressedDataUrl = (file, options = {}) => new Promise((resolve, reject) => {
-			const maxSize = Number.isFinite(options.maxSize) ? options.maxSize : 1400;
-			const quality = Number.isFinite(options.quality) ? options.quality : 0.82;
-			const reader = new FileReader();
-			const abortHandler = () => {
-				try {
-					reader.abort();
-				} catch (error) {
-					// Ignore abort errors
-				}
-				reject(new Error('Upload cancelled'));
-			};
 			if (options.signal) {
 				options.signal.addEventListener('abort', abortHandler, { once: true });
 			}
-			reader.onload = () => {
-				const img = new Image();
-				img.onload = () => {
-					const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-					const canvas = document.createElement('canvas');
-					canvas.width = Math.round(img.width * scale);
-					canvas.height = Math.round(img.height * scale);
-					const ctx = canvas.getContext('2d');
-					if (!ctx) {
-						if (options.signal) {
-							options.signal.removeEventListener('abort', abortHandler);
-						}
-						resolve(String(reader.result || ''));
-						return;
-					}
-					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-					if (options.signal) {
-						options.signal.removeEventListener('abort', abortHandler);
-					}
-					resolve(canvas.toDataURL('image/jpeg', quality));
-				};
-				img.onerror = () => reject(new Error('Image decode failed'));
-				img.src = String(reader.result || '');
-			};
-			reader.onerror = () => {
+
+			uploadTask.on('state_changed', (snapshot) => {
+				if (typeof options.onProgress !== 'function') return;
+				if (snapshot.totalBytes > 0) {
+					const percent = Math.min(100, Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100));
+					options.onProgress(percent);
+				}
+			}, (error) => {
 				if (options.signal) {
 					options.signal.removeEventListener('abort', abortHandler);
 				}
-				reject(reader.error || new Error('File read failed'));
-			};
-			reader.readAsDataURL(file);
+				reject(error);
+			}, async () => {
+				try {
+					if (options.signal) {
+						options.signal.removeEventListener('abort', abortHandler);
+					}
+					resolve(await uploadTask.snapshot.ref.getDownloadURL());
+				} catch (error) {
+					reject(error);
+				}
+			});
 		});
+
+		const uploadProductImage = (file, productId) => (
+			uploadFileToStorage(file, getStoragePath('products', productId, file.name))
+		);
+
+		const uploadGalleryFile = (file, slot, options = {}) => (
+			uploadFileToStorage(file, getStoragePath(`gallery/${slot.type}s`, slot.key, file.name), options)
+		);
 
 		const showGalleryLoading = (t, onCancel, options = {}) => {
 			if (!canUseSwal()) {
@@ -906,21 +858,42 @@ document.addEventListener('DOMContentLoaded', () => {
 				return;
 			}
 
-			const abortController = new AbortController();
-			showGalleryLoading(t, () => {
-				abortController.abort();
-				Swal.close();
-			}, { showProgress: slot.type === 'video' });
-			let dataUrl = '';
-			try {
-				dataUrl = slot.type === 'image'
-					? await readImageAsCompressedDataUrl(file, { signal: abortController.signal })
-					: await readFileAsDataUrlWithAbort(file, abortController.signal, updateGalleryProgress);
-			} catch (error) {
-				if (error && /cancelled/i.test(String(error.message || ''))) {
-					return;
+			Swal.fire({
+				title: t.galleryUploading,
+				text: t.galleryUploadText,
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				background: swalTheme.background,
+				color: swalTheme.color,
+				customClass: {
+					popup: 'admin-swal-popup',
+					title: 'admin-swal-title',
+					htmlContainer: 'admin-swal-text'
+				},
+				didOpen: () => {
+					Swal.showLoading();
 				}
-				console.warn('gallery upload read failed', error);
+			});
+			let galleryUrl = '';
+			try {
+				const cloudinaryData = new FormData();
+				cloudinaryData.append('file', file);
+				cloudinaryData.append('upload_preset', 'jewellery_preset');
+
+				const cloudinaryResponse = await fetch('https://api.cloudinary.com/v1_1/dzfts0dkn/upload', {
+					method: 'POST',
+					body: cloudinaryData
+				});
+
+				const cloudinaryJson = await cloudinaryResponse.json();
+
+				if (!cloudinaryResponse.ok) {
+					throw new Error(cloudinaryJson.error?.message || 'Cloudinary upload failed.');
+				}
+
+				galleryUrl = cloudinaryJson.secure_url;
+			} catch (error) {
+				console.warn('gallery upload failed', error);
 				Swal.close();
 				showGalleryResult(t, { icon: 'error', title: t.galleryUploadFailed });
 				return;
@@ -929,12 +902,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			const db = firebase.firestore();
 			try {
 				await db.collection('gallery').doc('homepage_gallery').update({
-					[slot.key]: dataUrl
+					[slot.key]: galleryUrl
 				});
 			} catch (error) {
 				try {
 					await db.collection('gallery').doc('homepage_gallery').set({
-						[slot.key]: dataUrl
+						[slot.key]: galleryUrl
 					}, { merge: true });
 				} catch (finalError) {
 					console.warn('gallery update failed', finalError);
@@ -945,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			Swal.close();
-			renderGallerySlot(slot, dataUrl);
+			renderGallerySlot(slot, galleryUrl);
 			if (slot.input) {
 				slot.input.value = '';
 			}
@@ -1011,7 +984,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				return `
 				<tr>
 						<td data-label="${t.tableImage}">
-							<img class="product-thumb" src="${product.image || product.imageUrl || '../img/logo.webp'}" alt="${product.title || 'Product image'}">
+							<img class="product-thumb" src="${product.imageUrl || product.image || '../img/logo.webp'}" alt="${product.title || 'Product image'}">
 						</td>
 						<td class="product-title-cell" data-label="${t.tableTitle}">
 							${titleEn}
@@ -1043,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					const titleNe = product.titleNe || '';
 					const productId = `#${String(index + 1).padStart(2, '0')}`;
 					const desc = getLocalizedValue(product, 'description', 'descriptionNe') || '';
-					const imageSrc = product.image || product.imageUrl || '../img/logo.webp';
+					const imageSrc = product.imageUrl || product.image || '../img/logo.webp';
 					return `
 						<div class="product-card" data-product-id="${product.id}">
 							<div class="product-card-main">
@@ -1337,12 +1310,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			if (selectedFile) {
 				try {
-					imageData = await readFileAsDataUrl(selectedFile);
-				} catch (readError) {
-					console.warn('Image read failed', readError);
+					const cloudinaryData = new FormData();
+					cloudinaryData.append('file', selectedFile);
+					cloudinaryData.append('upload_preset', 'jewellery_preset');
+
+					Swal.fire({
+						title: 'Uploading file...',
+						text: 'Please wait while the file uploads in the background.',
+						allowOutsideClick: false,
+						allowEscapeKey: false,
+						didOpen: () => {
+							Swal.showLoading();
+						}
+					});
+
+					const cloudinaryResponse = await fetch('https://api.cloudinary.com/v1_1/dzfts0dkn/upload', {
+						method: 'POST',
+						body: cloudinaryData
+					});
+
+					const cloudinaryJson = await cloudinaryResponse.json();
+
+					if (!cloudinaryResponse.ok) {
+						throw new Error(cloudinaryJson.error?.message || 'Cloudinary upload failed.');
+					}
+
+					imageData = cloudinaryJson.secure_url;
+					Swal.close();
+				} catch (uploadError) {
+					Swal.close();
+					console.warn('Image upload failed', uploadError);
 					showToast({
 						icon: 'error',
-						title: currentLang() === 'ne' ? 'तस्बिर पढ्न सकेन।' : 'Image read failed.'
+						title: currentLang() === 'ne' ? 'तस्बिर अपलोड गर्न सकिएन।' : 'Image upload failed.'
 					});
 					return;
 				}
@@ -1442,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				products = sortByCreatedAtAsc(snapshot.docs.map((doc) => {
 					const data = doc.data() || {};
-					let thumbUrl = data.imageUrl || '';
+					let thumbUrl = data.imageUrl || data.image || '';
 					if (thumbUrl.startsWith('img/')) {
 						thumbUrl = `../${thumbUrl}`;
 					}

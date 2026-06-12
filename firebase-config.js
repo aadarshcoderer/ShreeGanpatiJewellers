@@ -20,10 +20,16 @@ if (!window.firebase || !firebase.initializeApp) {
 } else {
   if (!firebase.apps?.length) {
     firebase.initializeApp(firebaseConfig);
-    // Explicitly expose Firestore and Auth globally for your scripts to use
-    window.db = firebase.firestore();
-    window.auth = firebase.auth();
-    window.storage = firebase.storage(); 
+    // Explicitly expose loaded Firebase services globally for your scripts to use.
+    if (typeof firebase.firestore === 'function') {
+      window.db = firebase.firestore();
+    }
+    if (typeof firebase.auth === 'function') {
+      window.auth = firebase.auth();
+    }
+    if (typeof firebase.storage === 'function') {
+      window.storage = firebase.storage();
+    }
     console.log("Firebase connected successfully to shree-ganpati-jewellers!");
   }
 }

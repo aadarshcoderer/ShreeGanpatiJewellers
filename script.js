@@ -498,26 +498,41 @@ function initHomepageGalleryControl() {
     };
 
     const updateImageSlot = (item, value) => {
-        if (!value) return;
+        const mediaUrl = normalizeMediaUrl(value);
+        if (!mediaUrl) return;
         const img = item.querySelector('[data-gallery-thumb]') || item.querySelector('img');
         if (img) {
-            img.src = value;
+            img.src = mediaUrl;
         }
-        item.setAttribute('data-full', value);
+        item.setAttribute('data-full', mediaUrl);
     };
 
     const updateVideoSlot = (item, value) => {
-        if (!value) return;
+        const mediaUrl = normalizeMediaUrl(value);
         const video = item.querySelector('[data-gallery-video]') || item.querySelector('video');
         const source = video ? video.querySelector('source') : null;
         if (source) {
-            source.src = value;
+            if (mediaUrl) {
+                source.src = mediaUrl;
+            } else {
+                source.removeAttribute('src');
+            }
         }
         if (video) {
-            video.src = source ? '' : value;
+            if (source) {
+                video.removeAttribute('src');
+            } else if (mediaUrl) {
+                video.src = mediaUrl;
+            } else {
+                video.removeAttribute('src');
+            }
             video.load();
         }
-        item.setAttribute('data-video', value);
+        if (mediaUrl) {
+            item.setAttribute('data-video', mediaUrl);
+        } else {
+            item.removeAttribute('data-video');
+        }
     };
 
     const applyGalleryData = (data) => {
@@ -1264,11 +1279,15 @@ function initProductsCatalog() {
 
 const productCache = new Map();
 
+function normalizeMediaUrl(url) {
+    const cleanUrl = String(url || '').trim();
+    if (!cleanUrl) return '';
+    if (cleanUrl.startsWith('../')) return cleanUrl.replace(/^\.\.\//, '');
+    return cleanUrl;
+}
+
 function normalizeImageUrl(url) {
-    if (!url) return 'img/model.webp';
-    if (url.startsWith('data:')) return url;
-    if (url.startsWith('../')) return url.replace(/^\.\.\//, '');
-    return url;
+    return normalizeMediaUrl(url) || 'img/model.webp';
 }
 
 function getCurrentLang() {
@@ -1339,7 +1358,7 @@ function openProductModal(product) {
     if (!modalSet) return;
 
     const { modal, modalImage, modalName, modalPrice, modalDesc, modalTags, modalWhatsApp, modalShare } = modalSet;
-    const imageUrl = normalizeImageUrl(product.image || product.imageUrl);
+    const imageUrl = normalizeImageUrl(product.imageUrl || product.image);
     const title = getLocalizedTitle(product) || 'Product';
     const weight = product.weight || '';
     const type = product.type || '';
@@ -1477,7 +1496,7 @@ function displayAllCatalogProducts() {
             const category = product.category || '';
             const weight = product.weight || '';
             const description = getLocalizedDescription(product) || '';
-            const cleanImgUrl = normalizeImageUrl(product.imageUrl);
+            const cleanImgUrl = normalizeImageUrl(product.imageUrl || product.image);
             return `
                 <article class="catalog-card" data-product-id="${docId}">
                     <button type="button" class="catalog-preview catalog-open" aria-label="Open ${title}">
@@ -1618,7 +1637,7 @@ function displayFeaturedHomepageProducts() {
 
             const title = getLocalizedTitle(product) || 'Untitled';
             const weight = product.weight || '';
-            const cleanImgUrl = normalizeImageUrl(product.imageUrl);
+            const cleanImgUrl = normalizeImageUrl(product.imageUrl || product.image);
 
             featuredGrid.innerHTML += `
                 <div class="collection-card" data-product-id="${docId}">
